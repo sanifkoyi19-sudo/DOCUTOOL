@@ -1,0 +1,1092 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DocuTools | PDF Tools</title>
+
+<!-- PDF Libraries -->
+<script src="https://unpkg.com/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.9.0/mammoth.browser.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.3/html2pdf.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/5.1.1/tesseract.min.js"></script>
+
+<style>
+:root {
+    --bg:#101010;
+    --card:#1b1b1b;
+    --card2:#242424;
+    --text:#ffffff;
+    --muted:#aaaaaa;
+    --red:#e50914;
+    --red2:#b20710;
+    --border:#333333;
+}
+
+body.light {
+    --bg:#f4f4f4;
+    --card:#ffffff;
+    --card2:#eeeeee;
+    --text:#171717;
+    --muted:#666666;
+    --border:#dddddd;
+}
+
+* {
+    box-sizing:border-box;
+}
+
+body {
+    margin:0;
+    font-family:Arial, sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    transition:.25s;
+}
+
+header {
+    background:var(--card);
+    border-bottom:2px solid var(--red);
+    padding:18px 6%;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    position:sticky;
+    top:0;
+    z-index:100;
+}
+
+.logo {
+    font-size:25px;
+    font-weight:800;
+    letter-spacing:-1px;
+}
+
+.logo span {
+    color:var(--red);
+}
+
+.header-actions {
+    display:flex;
+    gap:10px;
+}
+
+button {
+    border:0;
+    border-radius:7px;
+    padding:12px 17px;
+    font-size:14px;
+    font-weight:700;
+    cursor:pointer;
+    transition:.2s;
+}
+
+button:hover {
+    transform:translateY(-2px);
+    opacity:.9;
+}
+
+.primary {
+    background:var(--red);
+    color:white;
+}
+
+.primary:hover {
+    background:var(--red2);
+}
+
+.secondary {
+    background:var(--card2);
+    color:var(--text);
+    border:1px solid var(--border);
+}
+
+.hero {
+    text-align:center;
+    padding:65px 15px 40px;
+    background:linear-gradient(135deg,#1a0000,#101010 65%);
+}
+
+body.light .hero {
+    background:linear-gradient(135deg,#ffe5e5,#ffffff 70%);
+}
+
+.hero h1 {
+    font-size:clamp(30px,5vw,48px);
+    margin:0 0 15px;
+}
+
+.hero h1 span {
+    color:var(--red);
+}
+
+.hero p {
+    color:var(--muted);
+    font-size:16px;
+}
+
+.search-box {
+    width:min(550px,90%);
+    margin:28px auto 0;
+}
+
+input, textarea, select {
+    width:100%;
+    padding:13px;
+    border-radius:7px;
+    border:1px solid var(--border);
+    background:var(--card2);
+    color:var(--text);
+    font-size:14px;
+    margin-top:8px;
+    outline:none;
+}
+
+input:focus, textarea:focus, select:focus {
+    border-color:var(--red);
+}
+
+textarea {
+    min-height:150px;
+    resize:vertical;
+}
+
+.container {
+    width:min(1100px,92%);
+    margin:35px auto 60px;
+}
+
+.section-title {
+    margin:30px 0 20px;
+    font-size:23px;
+    border-left:4px solid var(--red);
+    padding-left:12px;
+}
+
+.tools-grid {
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    gap:18px;
+}
+
+.tool-card {
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:23px;
+    cursor:pointer;
+    transition:.2s;
+}
+
+.tool-card:hover {
+    border-color:var(--red);
+    transform:translateY(-4px);
+    box-shadow:0 8px 25px #e5091420;
+}
+
+.tool-number {
+    font-size:13px;
+    color:var(--red);
+    font-weight:bold;
+    margin-bottom:13px;
+}
+
+.tool-card h3 {
+    margin:5px 0 10px;
+    font-size:18px;
+}
+
+.tool-card p {
+    color:var(--muted);
+    font-size:13px;
+    line-height:1.6;
+    margin:0;
+}
+
+.workspace {
+    display:none;
+    background:var(--card);
+    border:1px solid var(--border);
+    border-top:3px solid var(--red);
+    border-radius:12px;
+    padding:25px;
+    margin-top:30px;
+}
+
+.workspace h2 {
+    margin-top:0;
+}
+
+.field {
+    margin:18px 0;
+}
+
+.field label {
+    font-size:14px;
+    font-weight:bold;
+}
+
+.action-row {
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    margin-top:18px;
+}
+
+.status {
+    margin-top:20px;
+    padding:15px;
+    background:var(--card2);
+    border-left:4px solid var(--red);
+    border-radius:6px;
+    color:var(--muted);
+    font-size:14px;
+    white-space:pre-wrap;
+}
+
+.preview {
+    display:block;
+    max-width:100%;
+    max-height:450px;
+    margin-top:18px;
+    border-radius:8px;
+}
+
+#camera {
+    display:none;
+    width:100%;
+    max-width:500px;
+    background:#000;
+    border-radius:8px;
+}
+
+.small-note {
+    color:var(--muted);
+    font-size:12px;
+    line-height:1.6;
+}
+
+footer {
+    text-align:center;
+    padding:35px 15px;
+    background:var(--card);
+    border-top:2px solid var(--red);
+}
+
+footer h3 {
+    margin:0 0 10px;
+}
+
+footer p {
+    color:var(--muted);
+    font-size:13px;
+}
+
+footer .creator {
+    color:var(--red);
+    font-weight:bold;
+    margin-top:15px;
+}
+
+.hidden {
+    display:none!important;
+}
+
+@media(max-width:600px) {
+    header {
+        padding:15px 4%;
+    }
+
+    .logo {
+        font-size:21px;
+    }
+
+    .hero {
+        padding:45px 12px 30px;
+    }
+
+    .workspace {
+        padding:17px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <div class="logo">DOCU<span>TOOLS</span></div>
+    <div class="header-actions">
+        <button class="secondary" onclick="toggleTheme()" id="themeButton">
+            Light Mode
+        </button>
+    </div>
+</header>
+
+<section class="hero">
+    <h1>All PDF Tools. <span>One Place.</span></h1>
+    <p>Convert, edit and manage your documents easily.</p>
+
+    <div class="search-box">
+        <input
+            type="search"
+            id="search"
+            placeholder="Search PDF tools..."
+            oninput="searchTools()"
+        >
+    </div>
+</section>
+
+<main class="container">
+
+<h2 class="section-title">All Tools</h2>
+
+<div class="tools-grid" id="toolsGrid">
+
+    <div class="tool-card" data-name="text to pdf" onclick="openTool('text')">
+        <div class="tool-number">01 / CONVERT</div>
+        <h3>Text to PDF</h3>
+        <p>Convert written text into a downloadable PDF document.</p>
+    </div>
+
+    <div class="tool-card" data-name="image to pdf jpg png" onclick="openTool('image')">
+        <div class="tool-number">02 / CONVERT</div>
+        <h3>Image to PDF</h3>
+        <p>Convert multiple JPG and PNG images into one PDF.</p>
+    </div>
+
+    <div class="tool-card" data-name="word to pdf docx" onclick="openTool('word')">
+        <div class="tool-number">03 / CONVERT</div>
+        <h3>Word to PDF</h3>
+        <p>Convert DOCX documents into PDF files.</p>
+    </div>
+
+    <div class="tool-card" data-name="photo scanner camera" onclick="openTool('scanner')">
+        <div class="tool-number">04 / SCAN</div>
+        <h3>Photo Scanner</h3>
+        <p>Capture document photos using your camera.</p>
+    </div>
+
+    <div class="tool-card" data-name="merge pdf combine" onclick="openTool('merge')">
+        <div class="tool-number">05 / ORGANIZE</div>
+        <h3>Merge PDF</h3>
+        <p>Combine multiple PDF files into one document.</p>
+    </div>
+
+    <div class="tool-card" data-name="split pdf extract pages" onclick="openTool('split')">
+        <div class="tool-number">06 / ORGANIZE</div>
+        <h3>Split PDF</h3>
+        <p>Extract selected pages from a PDF file.</p>
+    </div>
+
+    <div class="tool-card" data-name="compress image reduce size" onclick="openTool('compress')">
+        <div class="tool-number">07 / OPTIMIZE</div>
+        <h3>Compress Image</h3>
+        <p>Reduce image file size with JPEG compression.</p>
+    </div>
+
+    <div class="tool-card" data-name="image to text ocr" onclick="openTool('ocr')">
+        <div class="tool-number">08 / EXTRACT</div>
+        <h3>Image to Text</h3>
+        <p>Extract English text from images using OCR.</p>
+    </div>
+
+</div>
+
+<!-- TEXT TO PDF -->
+<section class="workspace" id="textTool">
+    <h2>Text to PDF</h2>
+
+    <div class="field">
+        <label>Document Title</label>
+        <input id="textTitle" placeholder="Enter document title">
+    </div>
+
+    <div class="field">
+        <label>Your Text</label>
+        <textarea id="textContent" placeholder="Write or paste your text here..."></textarea>
+    </div>
+
+    <button class="primary" onclick="textPDF()">Download PDF</button>
+
+    <p class="small-note">
+        Basic PDF fonts may not display Malayalam correctly.
+        Malayalam support requires embedding a Unicode font.
+    </p>
+</section>
+
+<!-- IMAGE TO PDF -->
+<section class="workspace" id="imageTool">
+    <h2>Image to PDF</h2>
+
+    <div class="field">
+        <label>Select Images</label>
+        <input type="file" id="imageFiles" accept="image/*" multiple>
+    </div>
+
+    <button class="primary" onclick="imagePDF()">Convert to PDF</button>
+</section>
+
+<!-- WORD TO PDF -->
+<section class="workspace" id="wordTool">
+    <h2>Word to PDF</h2>
+
+    <div class="field">
+        <label>Select DOCX File</label>
+        <input type="file" id="wordFile" accept=".docx">
+    </div>
+
+    <button class="primary" onclick="wordPDF()">Convert to PDF</button>
+
+    <p class="small-note">
+        Complex Word formatting, tables and images may not convert exactly.
+    </p>
+</section>
+
+<!-- SCANNER -->
+<section class="workspace" id="scannerTool">
+    <h2>Photo Scanner</h2>
+    <p>Capture a document using your camera.</p>
+
+    <video id="camera" autoplay playsinline></video>
+    <canvas id="scanCanvas" class="hidden"></canvas>
+
+    <div class="action-row">
+        <button class="primary" onclick="startCamera()">Start Camera</button>
+        <button class="secondary" onclick="capturePhoto()">Capture Photo</button>
+        <button class="secondary" onclick="stopCamera()">Stop Camera</button>
+    </div>
+
+    <img id="scanPreview" class="preview hidden">
+
+    <div class="action-row">
+        <button class="primary" onclick="scannerPDF()">Download Scanned PDF</button>
+    </div>
+
+    <p class="small-note">
+        Camera access requires HTTPS or localhost and permission.
+        Automatic document edge detection is not included.
+    </p>
+</section>
+
+<!-- MERGE PDF -->
+<section class="workspace" id="mergeTool">
+    <h2>Merge PDF</h2>
+
+    <div class="field">
+        <label>Select PDF Files</label>
+        <input type="file" id="mergeFiles" accept=".pdf,application/pdf" multiple>
+    </div>
+
+    <button class="primary" onclick="mergePDF()">Merge PDFs</button>
+</section>
+
+<!-- SPLIT PDF -->
+<section class="workspace" id="splitTool">
+    <h2>Split PDF</h2>
+
+    <div class="field">
+        <label>Select PDF</label>
+        <input type="file" id="splitFile" accept=".pdf,application/pdf">
+    </div>
+
+    <div class="field">
+        <label>Start Page</label>
+        <input type="number" id="startPage" min="1" value="1">
+    </div>
+
+    <div class="field">
+        <label>End Page</label>
+        <input type="number" id="endPage" min="1" value="1">
+    </div>
+
+    <button class="primary" onclick="splitPDF()">Extract Pages</button>
+</section>
+
+<!-- COMPRESS IMAGE -->
+<section class="workspace" id="compressTool">
+    <h2>Compress Image</h2>
+
+    <div class="field">
+        <label>Select Image</label>
+        <input type="file" id="compressFile" accept="image/*">
+    </div>
+
+    <div class="field">
+        <label>Compression Quality</label>
+        <select id="quality">
+            <option value="0.85">High Quality</option>
+            <option value="0.6" selected>Medium Quality</option>
+            <option value="0.35">Small File</option>
+        </select>
+    </div>
+
+    <button class="primary" onclick="compressImage()">Compress & Download</button>
+</section>
+
+<!-- OCR -->
+<section class="workspace" id="ocrTool">
+    <h2>Image to Text</h2>
+
+    <div class="field">
+        <label>Select Image</label>
+        <input type="file" id="ocrFile" accept="image/*">
+    </div>
+
+    <button class="primary" onclick="extractText()">Extract Text</button>
+
+    <div class="field">
+        <label>Extracted Text</label>
+        <textarea id="ocrResult" placeholder="Extracted text will appear here..."></textarea>
+    </div>
+
+    <button class="secondary" onclick="copyOCR()">Copy Text</button>
+
+    <p class="small-note">Currently configured for English OCR.</p>
+</section>
+
+<div id="status" class="status">
+    DocuTools is ready. Select a tool to get started.
+</div>
+
+</main>
+
+<footer>
+    <h3>DOCU<span style="color:#e50914">TOOLS</span></h3>
+    <p>Simple and useful online document tools.</p>
+    <p class="creator">Made by Sanif Koyissan</p>
+    <p>© 2026 DocuTools. All rights reserved.</p>
+</footer>
+
+<script>
+let activeCamera = null;
+let scannedImage = null;
+
+function showStatus(message) {
+    document.getElementById("status").textContent = message;
+}
+
+function toggleTheme() {
+    document.body.classList.toggle("light");
+
+    const isLight = document.body.classList.contains("light");
+
+    document.getElementById("themeButton").textContent =
+        isLight ? "Dark Mode" : "Light Mode";
+}
+
+function openTool(name) {
+    document.querySelectorAll(".workspace").forEach(section => {
+        section.style.display = "none";
+    });
+
+    const tool = document.getElementById(name + "Tool");
+
+    if (tool) {
+        tool.style.display = "block";
+        tool.scrollIntoView({behavior:"smooth",block:"start"});
+        showStatus("Selected tool: " + name);
+    }
+}
+
+function searchTools() {
+    const query = document.getElementById("search").value.toLowerCase();
+
+    document.querySelectorAll(".tool-card").forEach(card => {
+        card.style.display =
+            card.dataset.name.includes(query) ? "block" : "none";
+    });
+}
+
+function getJsPDF() {
+    if (window.jspdf && window.jspdf.jsPDF) {
+        return window.jspdf.jsPDF;
+    }
+
+    throw new Error("PDF library not loaded. Check internet connection and refresh.");
+}
+
+function readFileAsDataURL(file) {
+    return new Promise((resolve,reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+    });
+}
+
+function readFileAsArrayBuffer(file) {
+    return new Promise((resolve,reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsArrayBuffer(file);
+    });
+}
+
+function downloadBlob(blob,filename) {
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+
+    link.href = url;
+    link.download = filename;
+
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+
+    setTimeout(() => URL.revokeObjectURL(url),2000);
+}
+
+// TEXT TO PDF
+function textPDF() {
+    try {
+        const jsPDF = getJsPDF();
+
+        const content = document.getElementById("textContent").value;
+        const title =
+            document.getElementById("textTitle").value.trim() || "My Document";
+
+        if (!content.trim()) {
+            alert("Please enter some text.");
+            return;
+        }
+
+        const pdf = new jsPDF();
+        const lines = pdf.splitTextToSize(content,180);
+
+        let y = 20;
+
+        pdf.setFontSize(18);
+        pdf.text(title,15,y);
+
+        y += 15;
+        pdf.setFontSize(11);
+
+        lines.forEach(line => {
+            if (y > 280) {
+                pdf.addPage();
+                y = 20;
+            }
+
+            pdf.text(line,15,y);
+            y += 7;
+        });
+
+        pdf.save("DocuTools-Text.pdf");
+        showStatus("Text PDF created successfully.");
+
+    } catch(error) {
+        showStatus("Error: " + error.message);
+        alert(error.message);
+    }
+}
+
+// IMAGE TO PDF
+async function imagePDF() {
+    try {
+        const jsPDF = getJsPDF();
+        const files = document.getElementById("imageFiles").files;
+
+        if (!files.length) {
+            alert("Please select images.");
+            return;
+        }
+
+        const pdf = new jsPDF("p","mm","a4");
+
+        for (let i=0;i<files.length;i++) {
+            const data = await readFileAsDataURL(files[i]);
+            const img = new Image();
+
+            await new Promise((resolve,reject) => {
+                img.onload = resolve;
+                img.onerror = reject;
+                img.src = data;
+            });
+
+            if (i > 0) pdf.addPage();
+
+            const pageW = 190;
+            const pageH = 277;
+
+            const ratio = Math.min(
+                pageW / img.width,
+                pageH / img.height
+            );
+
+            const width = img.width * ratio;
+            const height = img.height * ratio;
+
+            const format = files[i].type === "image/png" ? "PNG" : "JPEG";
+
+            pdf.addImage(
+                data,
+                format,
+                (210-width)/2,
+                (297-height)/2,
+                width,
+                height
+            );
+        }
+
+        pdf.save("DocuTools-Images.pdf");
+        showStatus("Images converted successfully.");
+
+    } catch(error) {
+        showStatus("Error: " + error.message);
+    }
+}
+
+// WORD TO PDF
+async function wordPDF() {
+    try {
+        if (!window.mammoth || !window.html2pdf) {
+            throw new Error("Word conversion libraries are not loaded.");
+        }
+
+        const file = document.getElementById("wordFile").files[0];
+
+        if (!file) {
+            alert("Please select a DOCX file.");
+            return;
+        }
+
+        showStatus("Converting Word document...");
+
+        const buffer = await readFileAsArrayBuffer(file);
+        const result = await mammoth.convertToHtml({arrayBuffer:buffer});
+
+        const element = document.createElement("div");
+
+        element.style.padding = "25px";
+        element.style.background = "white";
+        element.style.color = "black";
+        element.style.fontFamily = "Arial";
+        element.innerHTML = result.value;
+
+        await html2pdf().set({
+            margin:10,
+            filename:"DocuTools-Word.pdf",
+            image:{type:"jpeg",quality:0.95},
+            html2canvas:{scale:2},
+            jsPDF:{unit:"mm",format:"a4",orientation:"portrait"}
+        }).from(element).save();
+
+        showStatus("Word document converted successfully.");
+
+    } catch(error) {
+        showStatus("Error: " + error.message);
+    }
+}
+
+// PHOTO SCANNER
+async function startCamera() {
+    try {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            throw new Error("Camera requires HTTPS or localhost.");
+        }
+
+        activeCamera = await navigator.mediaDevices.getUserMedia({
+            video:{facingMode:"environment"},
+            audio:false
+        });
+
+        const video = document.getElementById("camera");
+
+        video.srcObject = activeCamera;
+        video.style.display = "block";
+
+        await video.play();
+
+        showStatus("Camera started.");
+
+    } catch(error) {
+        showStatus("Camera error: " + error.message);
+    }
+}
+
+function capturePhoto() {
+    const video = document.getElementById("camera");
+
+    if (!video.videoWidth) {
+        alert("Start the camera first.");
+        return;
+    }
+
+    const canvas = document.getElementById("scanCanvas");
+
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+
+    canvas.getContext("2d").drawImage(video,0,0);
+
+    scannedImage = canvas.toDataURL("image/jpeg",0.95);
+
+    const preview = document.getElementById("scanPreview");
+
+    preview.src = scannedImage;
+    preview.classList.remove("hidden");
+
+    showStatus("Photo captured.");
+}
+
+function stopCamera() {
+    if (activeCamera) {
+        activeCamera.getTracks().forEach(track => track.stop());
+        activeCamera = null;
+    }
+
+    document.getElementById("camera").style.display = "none";
+    showStatus("Camera stopped.");
+}
+
+function scannerPDF() {
+    try {
+        if (!scannedImage) {
+            alert("Capture a photo first.");
+            return;
+        }
+
+        const jsPDF = getJsPDF();
+        const pdf = new jsPDF();
+
+        pdf.addImage(scannedImage,"JPEG",10,10,190,270);
+        pdf.save("DocuTools-Scan.pdf");
+
+        showStatus("Scanned PDF downloaded.");
+
+    } catch(error) {
+        showStatus("Error: " + error.message);
+    }
+}
+
+// MERGE PDF
+async function mergePDF() {
+    try {
+        if (!window.PDFLib) {
+            throw new Error("PDF library not loaded.");
+        }
+
+        const files = document.getElementById("mergeFiles").files;
+
+        if (files.length < 2) {
+            alert("Select at least two PDF files.");
+            return;
+        }
+
+        showStatus("Merging PDF files...");
+
+        const merged = await PDFLib.PDFDocument.create();
+
+        for (const file of files) {
+            const bytes = await readFileAsArrayBuffer(file);
+            const pdf = await PDFLib.PDFDocument.load(bytes);
+
+            const pages = await merged.copyPages(
+                pdf,
+                pdf.getPageIndices()
+            );
+
+            pages.forEach(page => merged.addPage(page));
+        }
+
+        const output = await merged.save();
+
+        downloadBlob(
+            new Blob([output],{type:"application/pdf"}),
+            "DocuTools-Merged.pdf"
+        );
+
+        showStatus("PDF files merged successfully.");
+
+    } catch(error) {
+        showStatus("Merge error: " + error.message);
+    }
+}
+
+// SPLIT PDF
+async function splitPDF() {
+    try {
+        if (!window.PDFLib) {
+            throw new Error("PDF library not loaded.");
+        }
+
+        const file = document.getElementById("splitFile").files[0];
+
+        if (!file) {
+            alert("Select a PDF file.");
+            return;
+        }
+
+        const bytes = await readFileAsArrayBuffer(file);
+        const source = await PDFLib.PDFDocument.load(bytes);
+
+        const total = source.getPageCount();
+
+        const start = Number(document.getElementById("startPage").value);
+        const end = Number(document.getElementById("endPage").value);
+
+        if (
+            !Number.isInteger(start) ||
+            !Number.isInteger(end) ||
+            start < 1 ||
+            end < start ||
+            end > total
+        ) {
+            alert("Invalid page range. Total pages: " + total);
+            return;
+        }
+
+        showStatus("Extracting pages...");
+
+        const output = await PDFLib.PDFDocument.create();
+        const indices = [];
+
+        for (let i=start-1;i<end;i++) {
+            indices.push(i);
+        }
+
+        const pages = await output.copyPages(source,indices);
+        pages.forEach(page => output.addPage(page));
+
+        const result = await output.save();
+
+        downloadBlob(
+            new Blob([result],{type:"application/pdf"}),
+            "DocuTools-Split.pdf"
+        );
+
+        showStatus("Pages extracted successfully.");
+
+    } catch(error) {
+        showStatus("Split error: " + error.message);
+    }
+}
+
+// COMPRESS IMAGE
+async function compressImage() {
+    try {
+        const file = document.getElementById("compressFile").files[0];
+
+        if (!file) {
+            alert("Select an image.");
+            return;
+        }
+
+        const quality = Number(document.getElementById("quality").value);
+        const data = await readFileAsDataURL(file);
+
+        const img = new Image();
+
+        await new Promise((resolve,reject) => {
+            img.onload = resolve;
+            img.onerror = reject;
+            img.src = data;
+        });
+
+        const canvas = document.createElement("canvas");
+
+        canvas.width = img.width;
+        canvas.height = img.height;
+
+        canvas.getContext("2d").drawImage(img,0,0);
+
+        canvas.toBlob(blob => {
+            if (!blob) {
+                showStatus("Could not compress image.");
+                return;
+            }
+
+            downloadBlob(blob,"DocuTools-Compressed.jpg");
+
+            showStatus(
+                "Original size: " + (file.size/1024).toFixed(1) +
+                " KB\nCompressed size: " + (blob.size/1024).toFixed(1) + " KB"
+            );
+
+        },"image/jpeg",quality);
+
+    } catch(error) {
+        showStatus("Compression error: " + error.message);
+    }
+}
+
+// IMAGE TO TEXT
+async function extractText() {
+    try {
+        if (!window.Tesseract) {
+            throw new Error("OCR library not loaded.");
+        }
+
+        const file = document.getElementById("ocrFile").files[0];
+
+        if (!file) {
+            alert("Select an image.");
+            return;
+        }
+
+        showStatus("Reading image. Please wait...");
+
+        const result = await Tesseract.recognize(
+            file,
+            "eng",
+            {
+                logger: info => {
+                    if (info.status) {
+                        showStatus(
+                            info.status + " " +
+                            Math.round((info.progress || 0)*100) + "%"
+                        );
+                    }
+                }
+            }
+        );
+
+        document.getElementById("ocrResult").value = result.data.text;
+
+        showStatus("Text extracted successfully.");
+
+    } catch(error) {
+        showStatus("OCR error: " + error.message);
+    }
+}
+
+function copyOCR() {
+    const text = document.getElementById("ocrResult").value;
+
+    if (!text) {
+        alert("No text to copy.");
+        return;
+    }
+
+    if (!navigator.clipboard) {
+        document.getElementById("ocrResult").select();
+        showStatus("Select and copy the text manually.");
+        return;
+    }
+
+    navigator.clipboard.writeText(text)
+        .then(() => showStatus("Text copied successfully."))
+        .catch(() => showStatus("Copy failed. Copy manually."));
+}
+
+// CHECK LIBRARIES
+window.addEventListener("load",() => {
+    const jsPDFReady = !!(window.jspdf && window.jspdf.jsPDF);
+    const pdfLibReady = !!window.PDFLib;
+
+    if (jsPDFReady && pdfLibReady) {
+        showStatus("DocuTools is ready.");
+    } else {
+        showStatus(
+            "Some libraries did not load. Check internet connection and refresh."
+        );
+    }
+});
+</script>
+
+</body>
+</html>
